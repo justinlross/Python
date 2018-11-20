@@ -1,0 +1,141 @@
+%matplotlib inline
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+import numpy as np
+import pandas as pd
+
+
+def b11():
+    """ function reads data from the auto-mpg.data file into a dataframe and cleans it. Returns data in a dataframe called 'df'.
+    """
+    
+    # Read the data into a dataframe called 'df'
+    d = pd.read_csv('data/auto-mpg.data', sep='\s+')
+    df = pd.DataFrame(data=d)
+    df.columns = ['mpg', 'cylinders', 'displacement','horsepower', 'weight', 'acceleration','origin', 'year', 'name']
+    
+    # Clean the data
+    df.mpg = df.mpg.apply(pd.to_numeric, errors='coerce') # Convert mpg to numeric values.
+    df.horsepower = df.horsepower.apply(pd.to_numeric, errors='coerce') # convert horsepower to numeric values.
+    df.fillna(0, inplace=True) # replace NaN with 0.
+    
+    return(df);
+    
+    
+    
+def b12():
+    """ function uses data from the b11 function to create a multi-axes chart with mpg plotted against hp as a scatter plot
+        and two histograms for mpg and fuel efficiency distributed on either axis.
+    """
+    
+    # Load the data
+    plt.style.use('seaborn-whitegrid')
+    data = b11()
+    x = data['horsepower']
+    y = data['mpg']
+    
+    # Set up the figure space with gridspec
+    fig = plt.figure(figsize=(8, 8))
+    grid = plt.GridSpec(4, 4, hspace=0.2, wspace=0.2)
+    
+    # Set up the main axes
+    main_ax = fig.add_subplot(grid[1:3, 0:3])
+    main_ax.set_xlim(35,240)
+    main_ax.set_ylim(5,50)
+    main_ax.set_xlabel('Horsepower')
+    main_ax.set_ylabel('Miles Per Gallon [mpg]')
+    
+    # Style the main axis
+    main_ax.plot(x, y, 'ok', markersize=3, alpha=0.4, color='#1f77b4')
+    
+    # Set up the y axis subplot
+    y_hist = fig.add_subplot(grid[0, 0:3], yticklabels=[], sharex=main_ax)
+    y_hist.set_title('Fuel Efficiency: Horsepower vs Miles Per Gallon')
+    y_hist.set_xlim(35,240)
+    
+    # Set up the x axis subplot
+    x_hist = fig.add_subplot(grid[1:3, 3], xticklabels=[], sharey=main_ax)
+    x_hist.set_xlabel('mpg')
+    x_hist.xaxis.set_label_position("top")
+    
+    # Add Histogram on the attached axes
+    x_hist.hist(y, 20, histtype='stepfilled',
+                orientation='horizontal', color='#1f77b4')
+    
+    y_hist.hist(x, 25, histtype='stepfilled',
+                orientation='vertical', color='#1f77b4')
+                
+                
+def b13():
+    """ function reads data using the b11 function before using matplotlibs 2 dimensional histogram to
+        display number of cars with various mpg/hp ratios.
+    """    
+    
+    # Load the data
+    data = b11()
+    hpVar = data['horsepower']
+    mpgVar = data['mpg']
+    
+    # Prepare the plot space
+    fig = plt.figure(figsize=(10, 5))
+    plt.xlabel('Horse power [hp]')
+    plt.ylabel('Miles per gallon [mpg]')
+    plt.title('Fuel Efficiency: Horsepower vs Miles Per Gallon')
+    
+    # Generate a 2-D histogram
+    plt.hist2d(hpVar, mpgVar, cmap=plt.cm.viridis, bins=(25), 
+           range=((40,235), (5, 50)))
+    
+    plt.colorbar(label='Number of Cars')
+      
+def b21():
+    """ function loads data from two csv files, before joining and returning them as a dataframe called birth_df.
+    """
+    
+    # Load and merge the data
+    us_births_1 = pd.read_csv('data/US_births_1994-2003_CDC_NCHS.csv')
+    us_births_2 = pd.read_csv('data/US_births_2000-2014_SSA.csv')
+    joinerVar = [us_births_1, us_births_2]
+    birth_df = pd.concat(joinerVar)
+    
+    # Load the multiple indices
+    birth_df = birth_df.groupby(['month', 'date_of_month'], as_index=True).births.mean()
+    birth_df = pd.DataFrame(birth_df) # convert back to a dataframe
+        
+    return(birth_df);
+    
+def b22():
+    """ function loads data using b21() function then creates a heatmap of number of births per day of a given month using it.
+    """
+    
+    # Load the data into the plot
+    data_df = b21()
+    unstacked_df = data_df.unstack().fillna(0)
+    fig, ax = plt.subplots()
+    
+    # Style the plot
+    heatmap = ax.pcolor(unstacked_df, cmap=plt.cm.viridis,
+                        vmin=9000, vmax=12000) # Viridis is chosen as it is a great colour map that is dark to light.
+    fig.set_size_inches(14, 7)
+    
+    # put the major ticks at the middle of each cell
+    ax.set_xticks(np.arange(unstacked_df.shape[1]) + 0.5, minor=False)
+    ax.set_yticks(np.arange(unstacked_df.shape[0]) + 0.5, minor=False)
+    ax.set_xticklabels(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17',
+                        '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'])
+    ax.set_yticklabels(['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'])
+    ax.xaxis.tick_top()
+    ax.invert_yaxis()
+    
+    # Style the colourbar
+    cbar = plt.colorbar(heatmap, ax=ax, shrink=0.25, orientation='horizontal', ticks=[9000, 10500, 12000],
+                        label='U.S. Average Daily Births: 1994-2014')
+    cbar.ax.set_xticklabels(['< 9k', '11k', '> 12K']) # label the color bar
+    cbar.ax.xaxis.set_label_position('top')
+    
+    """ its worth noting that the example colour bar is wrong in its design, the central value bewtween 9000 and 12000 is
+        10500 not 11k. I have designed my colour bar in line with the example, even though I acknowledge it should not be 11k
+        in the middle but rather 10.5k.
+    """
+    
