@@ -5,15 +5,19 @@ Created on Wed Apr  3 09:37:59 2019
 @author: Justin L Ross
 """
 
-# default imported data science libraries
+# core imported data science libraries
 import pandas as pd;
 import numpy as np;
 import matplotlib as mpl;
 import matplotlib.pyplot as plt;
+import seaborn as sns;
+# %matplotlib inline; # This is just for Jupyter notebook, to display graphs inline.
 
-# expanded imported libraries
-import csv
-
+# extended imported data science libraries
+import csv;
+import seaborn as sns;
+from sklearn import datasets, linear_model;
+from sklearn.metrics import mean_squared_error, r2_score;
 
 
 # importing data
