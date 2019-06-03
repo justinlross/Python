@@ -1,0 +1,12 @@
+n = 10; # Integer to count
+
+stringVar = '';
+count = 1;
+
+while count<n: # maybe this should be a for loop.!!
+    stringVar = stringVar + str(count)
+    count += 1
+
+stringVar = stringVar + str(n)
+
+print(stringVar)
